@@ -37,11 +37,11 @@ In a Bruin project, what are the required files/directories?
 Selected answer:
 
 ```text
-TBD
+Justification: Bruin aims to be flexible. The .bruin.yml file at the root defines the connections (DuckDB, BigQuery, etc.), and each asset folder contains a pipeline.yml (or metadata in comments in SQL/Python files) to define the logic. Unlike other tools, it does not impose a rigid folder structure for assets.
 ```
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Answer-TBD-lightgrey" alt="Answer Q1">
+  <img src="https://img.shields.io/badge/Answer-.bruin.yml and pipeline.yml (assets can be anywhere)-darkgreen" alt="Answer Q1">
 </p>
 
 ---
@@ -58,11 +58,11 @@ You're building a pipeline that processes NYC taxi data organized by month based
 Selected answer:
 
 ```text
-TBD
+Justification: For NYC taxi data (often voluminous and partitioned by month), doing a replace (rebuild everything) is too costly. The time_interval strategy allows precisely deleting the time window that we are about to reload, thus avoiding duplicates while being resource-efficient.
 ```
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Answer-TBD-lightgrey" alt="Answer Q2">
+  <img src="https://img.shields.io/badge/Answer-time_interval incremental based on a time column-darkgreen" alt="Answer Q2">
 </p>
 
 ---
@@ -90,11 +90,12 @@ How do you override this when running the pipeline to only process yellow taxis?
 Selected answer:
 
 ```text
-TBD
+When manipulating arrays in the command line, the syntax must respect JSON or YAML format so that the CLI correctly interprets the list, hence the importance of quotes and brackets.
 ```
 
+
 <p align="center">
-  <img src="https://img.shields.io/badge/Answer-TBD-lightgrey" alt="Answer Q3">
+  <img src="https://img.shields.io/badge/Answer-bruin%20run%20--var%20%27taxi_types%3D%5B%22yellow%22%5D%27-darkgreen" alt="Answer Q3">
 </p>
 
 ---
@@ -111,11 +112,11 @@ You've modified the `ingestion/trips.py` asset and want to run it plus all downs
 Selected answer:
 
 ```text
-TBD
+Justification: The + symbol at the end of an asset name is a common convention in the data world (popularized by dbt). It means: "Execute this asset AND everything that follows from it (its children)". This is crucial when you modify the source and want the subsequent transformations to be updated.
 ```
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Answer-TBD-lightgrey" alt="Answer Q4">
+  <img src="https://img.shields.io/badge/Answer-bruin run --select ingestion.trips+-darkgreen" alt="Answer Q4">
 </p>
 
 ---
@@ -132,11 +133,11 @@ You want to ensure the `pickup_datetime` column in your `trips` table never has 
 Selected answer:
 
 ```text
-TBD
+In Data Engineering, not_null on a timestamp column is the basis of robustness. If your pickup_datetime is null, your partitioning and time-based analyses collapse. It's a unit test for your data.
 ```
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Answer-TBD-lightgrey" alt="Answer Q5">
+  <img src="https://img.shields.io/badge/Answer-not_null: true-darkgreen" alt="Answer Q5">
 </p>
 
 ---
@@ -153,11 +154,11 @@ After building your pipeline, you want to visualize the dependency graph between
 Selected answer:
 
 ```text
-TBD
+Justification: The lineage command generates the visual or textual representation of parent-child relationships between your tables and scripts. It's the debugging tool par excellence for understanding why a piece of data is erroneous by tracing back to the source.
 ```
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Answer-TBD-lightgrey" alt="Answer Q6">
+  <img src="https://img.shields.io/badge/Answer-bruin lineage-darkgreen" alt="Answer Q6">
 </p>
 
 ---
@@ -174,15 +175,9 @@ You're running a Bruin pipeline for the first time on a new DuckDB database. Wha
 Selected answer:
 
 ```text
-TBD
+Justification: Cost/complexity analysis: The --full-refresh forces Bruin to ignore incremental states and recreate the tables. It's essential during the first run or if you modify the schema of an existing table (Data Definition Language - DDL).
 ```
 
 <p align="center">
-  <img src="https://img.shields.io/badge/Answer-TBD-lightgrey" alt="Answer Q7">
+  <img src="https://img.shields.io/badge/Answer-fullrefresh-darkgreen" alt="Answer Q7">
 </p>
-
----
-
-## Submitting the solutions
-
-- Form for submitting: <https://courses.datatalks.club/de-zoomcamp-2026/homework/hw5>
