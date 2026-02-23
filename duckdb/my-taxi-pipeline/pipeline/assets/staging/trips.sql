@@ -6,11 +6,11 @@
 # - Custom checks: https://getbruin.com/docs/bruin/quality/custom
 
 # TODO: Set the asset name (recommended: staging.trips).
-name: TODO_SET_ASSET_NAME
+name: staging.trips
 # TODO: Set platform type.
 # Docs: https://getbruin.com/docs/bruin/assets/sql
 # suggested type: duckdb.sql
-type: TODO
+type: duckdb.sql
 
 # TODO: Declare dependencies so `bruin run ... --downstream` and lineage work.
 # Examples:
@@ -18,8 +18,8 @@ type: TODO
 #   - ingestion.trips
 #   - ingestion.payment_lookup
 depends:
-  - TODO_DEP_1
-  - TODO_DEP_2
+  - ingestion.trips
+  - ingestion.payment_lookup
 
 # TODO: Choose time-based incremental processing if the dataset is naturally time-windowed.
 # - This module expects you to use `time_interval` to reprocess only the requested window.
@@ -47,36 +47,28 @@ materialization:
   # - delete+insert (refresh partitions based on incremental_key values)
   # - merge (upsert based on primary key)
   # - time_interval (refresh rows within a time window)
-  strategy: TODO
+  strategy: time_interval
   # TODO: set incremental_key to your event time column (DATE or TIMESTAMP).
-  incremental_key: TODO_SET_INCREMENTAL_KEY
+  incremental_key: pickup_datetime
   # TODO: choose `date` vs `timestamp` based on the incremental_key type.
-  time_granularity: TODO_SET_GRANULARITY
+  time_granularity: timestamp
 
 # TODO: Define output columns, mark primary keys, and add a few checks.
 columns:
-  - name: TODO_pk1
-    type: TODO
-    description: TODO
+  - name: pickup_datetime
+    type: timestamp
     primary_key: true
-    nullable: false
     checks:
       - name: not_null
-  - name: TODO_metric
-    type: TODO
-    description: TODO
-    checks:
-      - name: non_negative
 
 # TODO: Add one custom check that validates a staging invariant (uniqueness, ranges, etc.)
 # Docs: https://getbruin.com/docs/bruin/quality/custom
 custom_checks:
-  - name: TODO_custom_check_name
-    description: TODO
+  - name: row_count_greater_than_zero
     query: |
-      -- TODO: return a single scalar (COUNT(*), etc.) that should match `value`
-      SELECT 0
-    value: 0
+      SELECT CASE WHEN COUNT(*) > 0 THEN 1 ELSE 0 END
+      FROM staging.trips
+    value: 1
 
 @bruin */
 
@@ -95,7 +87,21 @@ custom_checks:
 -- Therefore, your query MUST filter to the same time window so only that subset is inserted.
 -- If you don't filter, you'll insert ALL data but only delete the window's data = duplicates.
 
-SELECT *
-FROM ingestion.trips
-WHERE pickup_datetime >= '{{ start_datetime }}'
-  AND pickup_datetime < '{{ end_datetime }}'
+SELECT
+    t.pickup_datetime,
+    t.dropoff_datetime,
+    t.pickup_location_id,
+    t.dropoff_location_id,
+    t.fare_amount,
+    t.taxi_type,
+    p.payment_type_name
+FROM ingestion.trips t
+LEFT JOIN ingestion.payment_lookup p
+    ON t.payment_type = p.payment_type_id
+WHERE t.pickup_datetime >= '{{ start_datetime }}'
+  AND t.pickup_datetime < '{{ end_datetime }}'
+QUALIFY ROW_NUMBER() OVER (
+    PARTITION BY t.pickup_datetime, t.dropoff_datetime,
+                 t.pickup_location_id, t.dropoff_location_id, t.fare_amount
+    ORDER BY t.pickup_datetime
+) = 1

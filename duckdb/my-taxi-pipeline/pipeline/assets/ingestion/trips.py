@@ -2,7 +2,7 @@
 
 # TODO: Set the asset name (recommended pattern: schema.asset_name).
 # - Convention in this module: use an `ingestion.` schema for raw ingestion tables.
-name: TODO_SET_ASSET_NAME
+name: ingestion.trips
 
 # TODO: Set the asset type.
 # Docs: https://getbruin.com/docs/bruin/assets/python
@@ -10,7 +10,7 @@ type: python
 
 # TODO: Pick a Python image version (Bruin runs Python in isolated environments).
 # Example: python:3.11
-image: TODO_SET_PYTHON_IMAGE
+image: python:3.11
 
 # TODO: Set the connection.
 connection: duckdb-default
@@ -28,15 +28,18 @@ materialization:
   type: table
   # TODO: pick a strategy.
   # suggested strategy: append
-  strategy: TODO
+  strategy: append
 
 # TODO: Define output columns (names + types) for metadata, lineage, and quality checks.
 # Tip: mark stable identifiers as `primary_key: true` if you plan to use `merge` later.
 # Docs: https://getbruin.com/docs/bruin/assets/columns
 columns:
-  - name: TODO_col1
-    type: TODO_type
-    description: TODO
+  - name: pickup_datetime
+    type: timestamp
+    description: "When the meter was engaged"
+  - name: dropoff_datetime
+    type: timestamp
+    description: "When the meter was disengaged"
 
 @bruin"""
 
@@ -44,6 +47,9 @@ columns:
 # - Put dependencies in the nearest `requirements.txt` (this template has one at the pipeline root).
 # Docs: https://getbruin.com/docs/bruin/assets/python
 
+import os
+import json
+import pandas as pd
 
 # TODO: Only implement `materialize()` if you are using Bruin Python materialization.
 # If you choose the manual-write approach (no `materialization:` block), remove this function and implement ingestion
@@ -67,6 +73,14 @@ def materialize():
     - Add a column like `extracted_at` for lineage/debugging (timestamp of extraction).
     - Prefer append-only in ingestion; handle duplicates in staging.
     """
-    # return final_dataframe
+    start_date = os.environ["BRUIN_START_DATE"]
+    end_date = os.environ["BRUIN_END_DATE"]
+    taxi_types = json.loads(os.environ["BRUIN_VARS"]).get("taxi_types", ["yellow"])
+
+    # Generate list of months between start and end dates
+    # Fetch parquet files from:
+    # https://d37ci6vzurychx.cloudfront.net/trip-data/{taxi_type}_tripdata_{year}-{month}.parquet
+
+    return final_dataframe
 
 
