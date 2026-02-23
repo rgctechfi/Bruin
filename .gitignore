@@ -271,6 +271,7 @@ terraform.rc
 
 #duckdb
 *.duckdb
+duckdb/my-taxi-pipeline/*.db
 
 #dlt
 .dlt/secrets.toml
@@ -287,3 +288,4 @@ Homeworks/4_dbt/data/parquet
 logs/runs
 logs/*.log
 *.py[cod]
+logs/queries
